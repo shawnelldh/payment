@@ -1,38 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import {Elements} from '@stripe/react-stripe-js';
+import {loadStripe} from '@stripe/stripe-js';
 
-const PayPalButton = () => {
-  const paypalRef = useRef();
+// Make sure to call `loadStripe` outside of a component’s render to avoid
+// recreating the `Stripe` object on every render.
+const stripePromise = loadStripe('pk_test_TYooMQauvdEDq54NiTphI7jx');
 
-  useEffect(() => {
-    window.paypal
-      .Buttons({
-        createOrder: (data, actions) => {
-          // Set up the transaction
-          return actions.order.create({
-            purchase_units: [
-              {
-                amount: {
-                  value: '10.00',
-                },
-              },
-            ],
-          });
-        },
-        onApprove: async (data, actions) => {
-          // Capture the funds from the transaction
-          const order = await actions.order.capture();
-          console.log(order);
-          // Make API call to server-side component to complete transaction
-        },
-      })
-      .render(paypalRef.current);
-  }, []);
+export default function App() {
+  const options = {
+    // passing the client secret obtained from the server
+    clientSecret: '{{CLIENT_SECRET}}',
+  };
 
   return (
-    <div>
-      <div ref={paypalRef}></div>
-    </div>
+    <Elements stripe={stripePromise} options={options}>
+      <CheckoutForm />
+    </Elements>
   );
 };
-
-export default PayPalButton;
